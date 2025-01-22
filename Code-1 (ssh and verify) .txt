@@ -1,0 +1,23 @@
+Code 1
+****************************
+
+from netmiko import ConnectHandler
+
+R1 = {
+    'device_type': 'cisco_ios',
+    'host':   '192.168.1.100',
+    'username': 'test',
+    'password': 'test',
+    'port' : 22,          # optional, defaults to 22
+    'secret': 'secret',     # optional, defaults to ''
+}
+
+net_connect = ConnectHandler(**R1)
+
+output = net_connect.send_command('show ip int brief')
+
+print(output)
+
+net_connect.disconnect()
+
+print("disconnected from R1")
