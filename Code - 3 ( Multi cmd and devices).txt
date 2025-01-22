@@ -1,0 +1,71 @@
+from netmiko import ConnectHandler
+
+
+def connect_to_device_with_netmiko(host, username, password):
+    """Establishes a connection to a network device using Netmiko."""
+    device = {
+        'device_type': 'cisco_ios',  # Correct device type for Cisco IOS
+        'host': host,
+        'username': username,
+        'password': password,
+        'port': 22,  # Default SSH port
+    }
+    try:
+        connection = ConnectHandler(**device)
+        return connection
+    except Exception as e:
+        return None
+
+
+def get_device_outputs(client, commands):
+    outputs = {}
+    try:
+        for command in commands:
+            print(f"Executing: {command}")
+            output = client.send_command(command)
+            outputs[command] = output
+        return outputs
+    except Exception as e:
+        return None
+
+
+def main():
+    # List of routers to connect to
+    routers = [
+        {"host": "192.168.1.100", "username": "test", "password": "test"},
+    ]
+
+
+    output_file = 'Routers.txt'
+
+    commands = [
+        "show ip interface brief",
+        "show interface desc",
+        "show ip route ",
+    ]
+
+
+    with open(output_file, 'w') as file:
+        for router in routers:
+            print(f"\n Connecting to {router['host']}...")
+            client = connect_to_device_with_netmiko(router["host"], router["username"], router["password"])
+            if client:
+                outputs = get_device_outputs(client, commands)
+                if outputs:
+                    file.write(f"\n--- Outputs from {router['host']} ---\n")
+                    for command, output in outputs.items():
+                        file.write(f"\n--- Command: {command} ---\n")
+                        file.write(output + '\n')
+                    print(f"Outputs from {router['host']} saved.")
+
+                client.disconnect()
+                print(f"\n Disconnected from {router['host']}.")
+            else:
+                print(f"\n Skipping {router['host']} due to connection error.")
+
+    print(f"\n All outputs saved to {output_file}.")
+	print(f"\n ****************************************** \n")
+
+
+if __name__ == "__main__":
+    main()
